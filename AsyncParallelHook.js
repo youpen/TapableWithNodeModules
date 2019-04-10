@@ -61,12 +61,14 @@ function anonymous(_callback
     do {
         var _counter = 2;
         var _done = () => {
+            // _callback是所有注册函数以及注册函数全部完成后的回调（即所有next函数都执行了），
+            // 但是如果任意一个next函数执行时带err，这个err会被传入callback执行
             _callback();
         };
         if(_counter <= 0) break;
         var _fn0 = _x[0];
         _fn0(_err0 => {
-            // 调用这个函数的时间不能确定，有可能已经执行了接下来的几个注册函数
+            // 这有可能是异步调用的回调， 调用这个函数的时间不能确定，有可能已经执行了接下来的几个注册函数
             if(_err0) {
                 // 如果还没执行所有注册函数，终止
                 if(_counter > 0) {
@@ -74,6 +76,7 @@ function anonymous(_callback
                     _counter = 0;
                 }
             } else {
+                // 每一个用tapAsync调用的回调的完成顺序不一定，只有最后一个完成了才使用_done
                 if(--_counter === 0) _done(); // 此处--的用法效果和c一样
             }
         });
@@ -81,7 +84,7 @@ function anonymous(_callback
         if(_counter <= 0) break;
         var _fn1 = _x[1];
         var _hasError1 = false;
-        // 此处好像是调用了tap的效果，上面的是调用了tapAsync
+        // 此处是调用了tap的效果，上面的是调用了tapAsync
         try {
             _fn1();
         } catch(_err) {
